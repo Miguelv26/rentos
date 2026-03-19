@@ -14,8 +14,11 @@ import { ClienteInput } from '@/hooks/clientes.utils';
 import { useConfig } from '@/context/ConfigContext';
 
 export default function ClientesPage() {
-  const { clientes, crearCliente, actualizarCliente, eliminarCliente, buscarClientes } = useClientes();
-  const { t } = useConfig();
+  const { clientes, crearCliente, actualizarCliente, buscarClientes } = useClientes();
+  const { t, highContrast } = useConfig();
+  const selectClass = highContrast
+    ? 'w-full bg-white border border-gray-300 rounded-lg p-2.5 text-sm text-black'
+    : 'w-full bg-[#1A1A24] border border-gray-700 rounded-lg p-2.5 text-sm text-white';
   const [busqueda, setBusqueda] = useState('');
   const [mostrarModal, setMostrarModal] = useState(false);
   const [clienteEditar, setClienteEditar] = useState<Cliente | null>(null);
@@ -221,7 +224,7 @@ export default function ClientesPage() {
               <div>
                 <label className="block text-[10px] font-bold uppercase text-gray-500 mb-1">{t('clientesHu', 'tipoDocumento')}</label>
                 <select
-                  className="w-full bg-[#1A1A24] border border-gray-700 rounded-lg p-2.5 text-sm text-white"
+                  className={selectClass}
                   value={formData.tipoDocumento}
                   onChange={(e) => setFormData({ ...formData, tipoDocumento: e.target.value as Cliente['tipoDocumento'] })}
                 >
@@ -272,7 +275,7 @@ export default function ClientesPage() {
               <div>
                 <label className="block text-[10px] font-bold uppercase text-gray-500 mb-1">{t('clientesHu', 'categoria')}</label>
                 <select
-                  className="w-full bg-[#1A1A24] border border-gray-700 rounded-lg p-2.5 text-sm text-white"
+                  className={selectClass}
                   value={formData.licencia?.categoria}
                   onChange={(e) => setFormData({ ...formData, licencia: { ...formData.licencia!, categoria: e.target.value } })}
                 >

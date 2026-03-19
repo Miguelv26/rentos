@@ -19,7 +19,14 @@ export default function ClienteDetallePage() {
   const { clientes, actualizarCliente } = useClientes();
   const { reservas } = useReservas();
   const { vehiculos } = useVehiculos();
-  const { t } = useConfig();
+  const { t, highContrast } = useConfig();
+
+  const linkGhost = highContrast
+    ? 'bg-gray-200 hover:bg-gray-300 text-black px-4 py-2 rounded-lg text-sm'
+    : 'bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg text-sm';
+  const controlInput = highContrast
+    ? 'w-full bg-white border border-gray-300 rounded-lg p-2 text-sm text-black'
+    : 'w-full bg-black/30 border border-gray-700 rounded-lg p-2 text-sm text-white';
 
   const [nuevoIncidente, setNuevoIncidente] = useState({
     tipo: 'multa' as ClienteIncidente['tipo'],
@@ -78,7 +85,7 @@ export default function ClienteDetallePage() {
             <h1 className="text-3xl font-black italic uppercase">{t('clienteDetalle', 'ficha')}</h1>
             <p className="text-gray-400">{cliente.nombre} · {cliente.numeroDocumento}</p>
           </div>
-          <Link href="/dashboard/clientes" className="bg-white/10 px-4 py-2 rounded-lg text-sm">{t('clienteDetalle', 'volver')}</Link>
+          <Link href="/dashboard/clientes" className={linkGhost}>{t('clienteDetalle', 'volver')}</Link>
         </div>
 
         {stats.riesgoAlto && (
@@ -131,7 +138,7 @@ export default function ClienteDetallePage() {
                   id="tipoIncidente"
                   value={nuevoIncidente.tipo}
                   onChange={(event) => setNuevoIncidente((prev) => ({ ...prev, tipo: event.target.value as ClienteIncidente['tipo'] }))}
-                  className="w-full bg-black/30 border border-gray-700 rounded-lg p-2 text-sm"
+                  className={controlInput}
                 >
                   <option value="multa">{t('clienteDetalle', 'multa')}</option>
                   <option value="dano">{t('clienteDetalle', 'dano')}</option>
@@ -145,7 +152,7 @@ export default function ClienteDetallePage() {
                   id="descripcionIncidente"
                   value={nuevoIncidente.descripcion}
                   onChange={(event) => setNuevoIncidente((prev) => ({ ...prev, descripcion: event.target.value }))}
-                  className="w-full bg-black/30 border border-gray-700 rounded-lg p-2 text-sm"
+                  className={controlInput}
                 />
               </div>
             </div>
@@ -159,7 +166,7 @@ export default function ClienteDetallePage() {
                   min={0}
                   value={nuevoIncidente.monto}
                   onChange={(event) => setNuevoIncidente((prev) => ({ ...prev, monto: event.target.value }))}
-                  className="w-full bg-black/30 border border-gray-700 rounded-lg p-2 text-sm"
+                  className={controlInput}
                 />
               </div>
               <button type="button" onClick={addIncidente} className="bg-[#00E5FF] text-black font-bold px-4 py-2 rounded-lg">{t('clienteDetalle', 'agregar')}</button>

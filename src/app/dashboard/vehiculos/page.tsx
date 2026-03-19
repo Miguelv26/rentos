@@ -92,7 +92,7 @@ export default function Page() {
             
             <div className="relative h-72 w-full">
               <img src={vehiculoDetalle.foto} alt={vehiculoDetalle.modelo} className="w-full h-full object-cover" />
-              <button onClick={() => setVehiculoDetalle(null)} className="absolute top-4 right-4 bg-black/50 hover:bg-black text-white w-10 h-10 rounded-full flex items-center justify-center">✕</button>
+              <button onClick={() => setVehiculoDetalle(null)} className={`absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center ${highContrast ? 'bg-white/80 hover:bg-white text-black' : 'bg-black/50 hover:bg-black text-white'}`}>✕</button>
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#121212] to-transparent h-32"></div>
             </div>
             
@@ -125,7 +125,7 @@ export default function Page() {
               <div className="flex gap-4">
                 <button 
                   onClick={() => { setVehiculoDetalle(null); setVehiculoAEditar(vehiculoDetalle); setMostrarFormulario(true); }}
-                  className="flex-1 bg-white/5 hover:bg-white/10 py-4 rounded-2xl font-bold transition-all border border-white/10 active:scale-95"
+                  className={`flex-1 py-4 rounded-2xl font-bold transition-all border active:scale-95 ${highContrast ? 'bg-gray-100 hover:bg-gray-200 border-gray-300' : 'bg-white/5 hover:bg-white/10 border-white/10'}`}
                 >
                   {t('vehiculosHu', 'editarFicha')}
                 </button>
