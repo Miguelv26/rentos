@@ -1,0 +1,34 @@
+services:
+  app:
+    build:
+      context: .
+      target: runner
+    image: rentos:prod
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: "1"
+    restart: unless-stopped
+
+  app-dev:
+    profiles: ["dev"]
+    build:
+      context: .
+      target: dev
+    image: rentos:dev
+    command: npm run dev -- -H 0.0.0.0
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      NEXT_TELEMETRY_DISABLED: "1"
+      WATCHPACK_POLLING: "true"
+    volumes:
+      - .:/app
+      - rentos_node_modules:/app/node_modules
+      - rentos_next_cache:/app/.next
+
+volumes:
+  rentos_node_modules:
+  rentos_next_cache:
