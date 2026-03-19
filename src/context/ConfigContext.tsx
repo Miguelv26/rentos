@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
 const dictionary = {
   es: {
@@ -20,7 +20,7 @@ const dictionary = {
     home: { title: 'Gestión de Flota', subtitle: 'Administración y control de inventario' },
     card: { km: 'Kilometraje', maint: 'Mantenimiento', btn_details: 'Detalles' },
     status: { available: 'Disponible', maintenance: 'En Taller', rented: 'Alquilado' },
-    a11y: { dark: 'Modo Oscuro 🌙', light: 'Modo Claro ☀️' },
+    a11y: { dark: 'Modo Oscuro', light: 'Modo Claro' },
     analytics: {
       title: 'Dashboard Analitico',
       subtitle: 'ROI, ocupacion y rendimiento de flota',
@@ -698,6 +698,20 @@ const ConfigContext = createContext<any>(defaultConfig);
 export const ConfigProvider = ({ children }: { children: React.ReactNode }) => {
   const [lang, setLang] = useState<'es' | 'en'>('es');
   const [highContrast, setHighContrast] = useState(false);
+
+  useEffect(() => {
+    const savedTheme = window.localStorage.getItem('rentos-theme');
+    if (savedTheme === 'light') {
+      setHighContrast(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    const nextTheme = highContrast ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', nextTheme);
+    document.documentElement.style.colorScheme = nextTheme;
+    window.localStorage.setItem('rentos-theme', nextTheme);
+  }, [highContrast]);
 
   const t = (section: string, key: string) => {
     // @ts-ignore
