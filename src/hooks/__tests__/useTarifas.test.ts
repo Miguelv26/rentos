@@ -1,3 +1,30 @@
+import { renderHook, waitFor } from '@testing-library/react';
+import { useTarifas } from '@/hooks/useTarifas';
+
+describe('useTarifas - calcularPrecioFinal', () => {
+  it('aplica temporada alta cuando hay solapamiento de fechas', async () => {
+    const { result } = renderHook(() => useTarifas());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    const precio = result.current.calcularPrecioFinal(100, '2026-12-20', '2026-12-22');
+    expect(precio).toBe(299);
+  });
+
+  it('aplica descuento por larga duración (>=7 días)', async () => {
+    const { result } = renderHook(() => useTarifas());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    const precio = result.current.calcularPrecioFinal(100, '2026-03-01', '2026-03-08');
+    expect(precio).toBe(724);
+  });
+
+  it('aplica recargo de fin de semana si incluye sabado/domingo', async () => {
+    const { result } = renderHook(() => useTarifas());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    const precio = result.current.calcularPrecioFinal(50, '2026-03-14', '2026-03-15');
+    expect(precio).toBe(57);
+  });
+});
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useTarifas } from '@/hooks/useTarifas';
 
