@@ -16,11 +16,9 @@ import { useConfig } from '@/context/ConfigContext';
 export default function ClientesPage() {
   const { clientes, crearCliente, actualizarCliente, buscarClientes } = useClientes();
   const { t, highContrast } = useConfig();
-
   const selectClass = highContrast
     ? 'w-full bg-white border border-gray-300 rounded-lg p-2.5 text-sm text-black'
     : 'w-full bg-[#1A1A24] border border-gray-700 rounded-lg p-2.5 text-sm text-white';
-
   const [busqueda, setBusqueda] = useState('');
   const [mostrarModal, setMostrarModal] = useState(false);
   const [clienteEditar, setClienteEditar] = useState<Cliente | null>(null);

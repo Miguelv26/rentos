@@ -175,7 +175,23 @@ export default function ReservasPage() {
   }, [motoSeleccionada]);
 
   const themeCard = highContrast ? 'bg-white border-gray-300 text-black' : 'bg-[#1E1E1E] border-gray-800 text-white';
-  const themeInput = "w-full bg-black/40 border border-gray-700 rounded-xl p-3 text-xs outline-none focus:border-[#00E5FF] text-white";
+  const themeInput = highContrast
+    ? 'w-full bg-white border border-gray-300 rounded-xl p-3 text-xs outline-none focus:border-[#00E5FF] text-black'
+    : 'w-full bg-black/40 border border-gray-700 rounded-xl p-3 text-xs outline-none focus:border-[#00E5FF] text-white';
+  const themeMuted = highContrast ? 'text-gray-600' : 'text-gray-500';
+  const themeSoftPanel = highContrast ? 'bg-gray-100 border-gray-300' : 'bg-white/5 border-gray-700';
+  const themeListPanel = highContrast ? 'bg-gray-100 border-gray-300' : 'bg-white/5 border-white/5';
+  const themeActionGhost = highContrast
+    ? 'text-[10px] font-black bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded-full text-black transition'
+    : 'text-[10px] font-black bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full text-white transition';
+  const themeShortcut = highContrast
+    ? 'bg-gray-200 hover:bg-gray-300 text-black px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider'
+    : 'bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider';
+  const themeStrongText = highContrast ? 'text-black' : 'text-white';
+  const themeVehicleCard = highContrast
+    ? 'border-gray-300 bg-white hover:border-gray-400'
+    : 'border-gray-800 bg-[#1E1E1E] hover:border-gray-600';
+  const themeVehicleCardSelected = highContrast ? 'border-[#00E5FF] bg-cyan-50' : 'border-[#00E5FF] bg-[#00E5FF]/5';
 
   return (
     <MainLayout>
@@ -186,7 +202,7 @@ export default function ReservasPage() {
             <h2 className="text-3xl font-black italic uppercase italic">📅 {t('reservas', 'title')}</h2>
             <p className="text-gray-500">{t('reservas', 'subtitle')}</p>
           </div>
-          <Link href="/dashboard/reservas/check-in" className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider">
+          <Link href="/dashboard/reservas/check-in" className={themeShortcut}>
             {t('reservas', 'checkinShortcut')}
           </Link>
         </div>
@@ -207,8 +223,8 @@ export default function ReservasPage() {
                 <label htmlFor="reserva-fecha-fin" className="text-[10px] uppercase font-bold text-gray-500">{t('reservas', 'fechaDevolucion')}</label>
                 <input id="reserva-fecha-fin" type="date" value={fechas.fin} className={themeInput} onChange={(e) => setFechas({...fechas, fin: e.target.value})} />
               </div>
-              <div className="p-3 bg-white/5 rounded-xl border border-dashed border-gray-700 text-center">
-                <span className="text-2xl font-black text-white">{calcularDias()}</span>
+              <div className={`p-3 rounded-xl border border-dashed text-center ${themeSoftPanel}`}>
+                <span className={`text-2xl font-black ${themeStrongText}`}>{calcularDias()}</span>
                 <span className="text-[10px] uppercase text-gray-500 block font-bold">{t('reservas', 'diasTotales')}</span>
               </div>
             </div>
@@ -219,9 +235,9 @@ export default function ReservasPage() {
             
             <div className="space-y-2 mb-6">
               {tarifasExtras.map((tarifa) => (
-                <div key={tarifa.id} className="flex justify-between items-center p-3 bg-white/5 rounded-lg border border-white/5 group hover:border-red-500/30 transition">
+                <div key={tarifa.id} className={`flex justify-between items-center p-3 rounded-lg border group hover:border-red-500/30 transition ${themeListPanel}`}>
                   <div className="flex-1">
-                    <p className="text-xs font-bold text-gray-300">{tarifa.nombre}</p>
+                    <p className={`text-xs font-bold ${highContrast ? 'text-gray-700' : 'text-gray-300'}`}>{tarifa.nombre}</p>
                     <p className="text-[9px] text-gray-500 uppercase">{tarifa.esPorDia ? t('reservas', 'precioPorDia') : t('reservas', 'precioFijo')}</p>
                   </div>
                   <div className="flex items-center gap-3">
@@ -240,7 +256,7 @@ export default function ReservasPage() {
               {tarifasExtras.length === 0 && <p className="text-xs text-gray-500 text-center italic">{t('reservas', 'sinTarifas')}</p>}
             </div>
 
-            <div className="pt-4 border-t border-gray-800">
+            <div className={`pt-4 border-t ${highContrast ? 'border-gray-300' : 'border-gray-800'}`}>
               <p className="text-[10px] uppercase font-bold text-gray-500 mb-2">{t('reservas', 'crearCargo')}</p>
               <div className="grid grid-cols-2 gap-2 mb-2">
                 <input 
@@ -255,11 +271,11 @@ export default function ReservasPage() {
                 />
               </div>
               <div className="flex justify-between items-center mb-3">
-                <label className="text-[10px] text-gray-400 flex items-center gap-2 cursor-pointer">
+                <label className={`text-[10px] flex items-center gap-2 cursor-pointer ${highContrast ? 'text-gray-700' : 'text-gray-400'}`}>
                   <input type="checkbox" checked={nuevaTarifa.esPorDia} onChange={(e) => setNuevaTarifa({...nuevaTarifa, esPorDia: e.target.checked})} />
                   {t('reservas', 'cobrarPorDia')}
                 </label>
-                <button onClick={agregarTarifa} className="text-[10px] font-black bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full text-white transition">{t('reservas', 'agregar')}</button>
+                <button onClick={agregarTarifa} className={themeActionGhost}>{t('reservas', 'agregar')}</button>
               </div>
             </div>
           </div>
@@ -270,7 +286,7 @@ export default function ReservasPage() {
             <h3 className="font-black uppercase text-gray-500 text-xs tracking-widest">
               {t('reservas', 'vehiculosDisponibles')} ({motosDisponibles.length})
             </h3>
-            <p className="text-[10px] text-gray-600 italic">
+            <p className={`text-[10px] italic ${themeMuted}`}>
               {t('reservas', 'rango')}: {fechas.inicio} ➔ {fechas.fin}
             </p>
           </div>
@@ -285,7 +301,7 @@ export default function ReservasPage() {
                   aria-pressed={motoSeleccionada?.id === moto.id}
                   aria-label={`${moto.marca} ${moto.modelo}, ${t('reservas', 'precioPorDia')}: ${moto.precioDia}`}
                   className={`relative p-4 rounded-2xl border transition-all cursor-pointer flex gap-4 overflow-hidden group hover:scale-[1.02] duration-300 text-left ${
-                    motoSeleccionada?.id === moto.id ? 'border-[#00E5FF] bg-[#00E5FF]/5' : 'border-gray-800 bg-[#1E1E1E] hover:border-gray-600'
+                    motoSeleccionada?.id === moto.id ? themeVehicleCardSelected : themeVehicleCard
                   }`}
                 >
                   <div className="w-24 h-24 rounded-xl overflow-hidden shrink-0">
@@ -299,7 +315,7 @@ export default function ReservasPage() {
                         <p className="text-[10px] text-gray-500 font-bold bg-white/5 inline-block px-2 py-0.5 rounded">{moto.tipo}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-2xl font-black text-white">${moto.precioDia}</p>
+                        <p className={`text-2xl font-black ${themeStrongText}`}>${moto.precioDia}</p>
                         <p className="text-[9px] text-gray-500 uppercase font-bold">/ {t('reservas', 'precioPorDia')}</p>
                       </div>
                     </div>
@@ -339,7 +355,7 @@ export default function ReservasPage() {
 
             <div className="p-8 space-y-6">
               
-              <div className="flex gap-4 items-center pb-6 border-b border-gray-800">
+              <div className={`flex gap-4 items-center pb-6 border-b ${highContrast ? 'border-gray-300' : 'border-gray-800'}`}>
                 <img src={motoSeleccionada.foto} className="w-16 h-16 rounded-full object-cover border-2 border-[#00E5FF]" />
                 <div>
                   <h4 className="font-black text-lg uppercase">{motoSeleccionada.modelo}</h4>
@@ -347,7 +363,7 @@ export default function ReservasPage() {
                 </div>
                 <div className="ml-auto text-right">
                   <p className="text-[10px] text-gray-500 uppercase font-bold">{t('reservas', 'periodo')}</p>
-                  <p className="text-sm font-bold text-white">{fechas.inicio} <span className="text-[#00E5FF]">➜</span> {fechas.fin}</p>
+                  <p className={`text-sm font-bold ${themeStrongText}`}>{fechas.inicio} <span className="text-[#00E5FF]">➜</span> {fechas.fin}</p>
                 </div>
               </div>
 
@@ -381,9 +397,9 @@ export default function ReservasPage() {
               </div>
 
               {clienteSeleccionado && (
-                <div className="bg-white/5 rounded-xl p-4 border border-white/10 text-xs">
-                  <p className="text-gray-400">{t('reservas', 'licencia')}: <span className="text-white font-bold">{clienteSeleccionado.licencia.numero}</span></p>
-                  <p className="text-gray-400 mt-1">{t('reservas', 'vencimiento')}: <span className="text-white font-bold">{clienteSeleccionado.licencia.fechaVencimiento}</span></p>
+                <div className={`rounded-xl p-4 border text-xs ${highContrast ? 'bg-gray-100 border-gray-300' : 'bg-white/5 border-white/10'}`}>
+                  <p className={highContrast ? 'text-gray-700' : 'text-gray-400'}>{t('reservas', 'licencia')}: <span className={`${themeStrongText} font-bold`}>{clienteSeleccionado.licencia.numero}</span></p>
+                  <p className={`mt-1 ${highContrast ? 'text-gray-700' : 'text-gray-400'}`}>{t('reservas', 'vencimiento')}: <span className={`${themeStrongText} font-bold`}>{clienteSeleccionado.licencia.fechaVencimiento}</span></p>
                   <p className={`mt-2 font-bold ${isLicenseValidForDate(clienteSeleccionado, fechas.inicio) ? 'text-green-400' : 'text-red-400'}`}>
                     {isLicenseValidForDate(clienteSeleccionado, fechas.inicio)
                       ? t('reservas', 'licenciaValida')
@@ -408,8 +424,8 @@ export default function ReservasPage() {
                 </select>
               </div>
 
-              <div className="bg-white/5 rounded-xl p-5 border border-white/5 space-y-2 font-mono text-sm">
-                <div className="flex justify-between text-gray-400 text-xs uppercase font-bold mb-2">
+              <div className={`rounded-xl p-5 border space-y-2 font-mono text-sm ${highContrast ? 'bg-gray-100 border-gray-300' : 'bg-white/5 border-white/5'}`}>
+                <div className={`flex justify-between text-xs uppercase font-bold mb-2 ${highContrast ? 'text-gray-700' : 'text-gray-400'}`}>
                   <span>{t('reservas', 'concepto')}</span><span>{t('reservas', 'subtotal')}</span>
                 </div>
                 
@@ -419,7 +435,7 @@ export default function ReservasPage() {
                 </div>
 
                 {tarifasExtras.map((tarifa) => (
-                  <div key={tarifa.id} className="flex justify-between text-gray-400 text-xs">
+                  <div key={tarifa.id} className={`flex justify-between text-xs ${highContrast ? 'text-gray-700' : 'text-gray-400'}`}>
                     <span>+ {tarifa.nombre} {tarifa.esPorDia && `(x${calcularDias()})`}</span>
                     <span>${tarifa.esPorDia ? tarifa.precio * calcularDias() : tarifa.precio}</span>
                   </div>
@@ -427,12 +443,12 @@ export default function ReservasPage() {
 
                 <div className="border-t border-dashed border-gray-600 my-3 pt-3 flex justify-between items-center">
                   <span className="font-black text-lg uppercase italic text-[#00E5FF]">{t('reservas', 'deposito')}</span>
-                  <span className="font-black text-xl text-white">${calcularDesglose(motoSeleccionada.precioDia).deposito}</span>
+                  <span className={`font-black text-xl ${themeStrongText}`}>${calcularDesglose(motoSeleccionada.precioDia).deposito}</span>
                 </div>
 
                 <div className="border-t border-dashed border-gray-600 my-3 pt-3 flex justify-between items-center">
                   <span className="font-black text-lg uppercase italic text-[#00E5FF]">{t('reservas', 'totalPagar')}</span>
-                  <span className="font-black text-2xl text-white">${calcularDesglose(motoSeleccionada.precioDia).granTotal}</span>
+                  <span className={`font-black text-2xl ${themeStrongText}`}>${calcularDesglose(motoSeleccionada.precioDia).granTotal}</span>
                 </div>
               </div>
 

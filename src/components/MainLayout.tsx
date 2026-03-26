@@ -16,9 +16,14 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     wrapper: highContrast ? 'bg-white text-black' : 'bg-[#0a0a0a] text-gray-200',
     sidebar: highContrast ? 'bg-gray-100 border-r border-gray-300' : 'bg-[#121212] border-r border-gray-800',
     header: highContrast ? 'bg-white border-b border-gray-300' : 'bg-[#0a0a0a] border-b border-gray-800',
-    input: highContrast ? 'bg-gray-100 border border-gray-400 text-black' : 'bg-gray-800 text-white',
+    input: highContrast ? 'bg-gray-100 border border-gray-400 text-black' : 'bg-gray-800 border border-gray-700 text-white',
     sidebarActive: 'bg-[#00E5FF] text-black font-black shadow-[0_0_15px_rgba(0,229,255,0.3)]',
     sidebarLink: highContrast ? 'text-gray-600 hover:bg-gray-200' : 'text-gray-400 hover:bg-gray-800',
+    divider: highContrast ? 'border-gray-300' : 'border-gray-800',
+    metaText: highContrast ? 'text-gray-500' : 'text-gray-600',
+    actionButton: highContrast
+      ? 'text-[10px] font-bold border px-4 py-1.5 rounded-full border-gray-400 text-black hover:bg-black hover:text-white transition-all'
+      : 'text-[10px] font-bold border px-4 py-1.5 rounded-full border-gray-500 text-gray-200 hover:bg-gray-200 hover:text-black transition-all',
   };
 
 
@@ -64,7 +69,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             );
           })}
           
-          <div className="pt-4 mt-4 border-t border-gray-800">
+          <div className={`pt-4 mt-4 border-t ${theme.divider}`}>
             {superAdminItems.map((item) => {
               const isActive = pathname === item.path;
               return (
@@ -83,8 +88,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           </div>
         </nav>
 
-        <div className="p-6 border-t border-white/5">
-            <p className="text-[10px] text-gray-600 font-bold uppercase tracking-widest">v1.0.4 - 2026</p>
+        <div className={`p-6 border-t ${theme.divider}`}>
+          <p className={`text-[10px] ${theme.metaText} font-bold uppercase tracking-widest`}>v1.0.4 - 2026</p>
         </div>
       </aside>
 
@@ -104,11 +109,11 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           </div>
 
           <div className="flex items-center space-x-4">
-            <button onClick={toggleContrast} className="text-[10px] font-bold border px-4 py-1.5 rounded-full border-current hover:bg-current hover:text-black transition-all">
-               {highContrast ? 'Modo Oscuro' : 'Modo Claro'}
+            <button onClick={toggleContrast} className={theme.actionButton}>
+              {highContrast ? t('a11y', 'light') : t('a11y', 'dark')}
             </button>
             
-            <button onClick={toggleLang} className="text-[10px] font-bold border px-4 py-1.5 rounded-full border-current hover:bg-current hover:text-black transition-all">
+            <button onClick={toggleLang} className={theme.actionButton}>
               {lang === 'es' ? '🇺🇸 EN' : '🇪🇸 ES'}
             </button>
 

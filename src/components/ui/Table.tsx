@@ -22,7 +22,7 @@ interface TableHeaderProps {
 
 export const TableHeader: React.FC<TableHeaderProps> = ({ children }) => {
   return (
-    <thead className="border-b border-gray-800">
+    <thead className="table-divider border-b">
       {children}
     </thead>
   );
@@ -43,7 +43,7 @@ interface TableRowProps {
 
 export const TableRow: React.FC<TableRowProps> = ({ children, hover = true }) => {
   return (
-    <tr className={`border-b border-gray-800/50 ${hover ? 'hover:bg-[rgba(0,229,255,0.05)] transition-colors' : ''}`}>
+    <tr className={`table-divider border-b ${hover ? 'hover:bg-[rgba(0,229,255,0.05)] transition-colors' : ''}`}>
       {children}
     </tr>
   );

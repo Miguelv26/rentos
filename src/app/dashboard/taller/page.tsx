@@ -77,6 +77,10 @@ export default function TallerPage() {
   };
 
   const themeCard = highContrast ? 'bg-white border-gray-300 text-black' : 'bg-[#1E1E1E] border-gray-800 text-white';
+  const themeInput = highContrast
+    ? 'w-full bg-white border border-gray-300 rounded-xl p-3 text-sm text-black outline-none'
+    : 'w-full bg-black/40 border border-gray-700 rounded-xl p-3 text-sm text-white outline-none';
+  const themeOverlayItem = highContrast ? 'bg-gray-100 border-gray-300' : 'bg-white/5 border-white/5';
 
   return (
     <MainLayout>
@@ -86,7 +90,7 @@ export default function TallerPage() {
           <p className={highContrast ? 'text-gray-600' : 'text-gray-400'}>Control de tiempos y costos de reparación</p>
         </div>
         <div className="flex gap-3">
-          <button onClick={() => setMostrarHistorial(true)} className="px-6 py-3 rounded-xl border border-gray-700 font-bold text-xs uppercase hover:bg-white/5 transition">📋 Historial</button>
+          <button onClick={() => setMostrarHistorial(true)} className={`px-6 py-3 rounded-xl border font-bold text-xs uppercase transition ${highContrast ? 'border-gray-300 hover:bg-gray-100' : 'border-gray-700 hover:bg-white/5'}`}>📋 Historial</button>
           <button onClick={() => setMostrarNuevoMant(true)} className="bg-[#00E5FF] hover:bg-cyan-300 text-black font-black px-6 py-3 rounded-xl transition-all shadow-[0_0_20px_rgba(0,229,255,0.3)] text-xs uppercase">+ Registrar Entrada</button>
         </div>
       </div>
@@ -119,7 +123,7 @@ export default function TallerPage() {
                       {isInTaller ? infoManto.tareaPendiente : `${moto.proximoMantenimiento} KM`}
                     </p>
                   </div>
-                  <div className="w-full h-2 bg-gray-900 rounded-full overflow-hidden">
+                  <div className={`w-full h-2 rounded-full overflow-hidden ${highContrast ? 'bg-gray-200' : 'bg-gray-900'}`}>
                     <div 
                       className={`h-full transition-all duration-1000 ${isInTaller ? 'bg-orange-500 animate-pulse' : 'bg-red-600'}`}
                       style={{ width: isInTaller ? '75%' : `${(moto.proximoMantenimiento / 2500) * 100}%` }}
@@ -145,7 +149,7 @@ export default function TallerPage() {
             <h3 className="text-2xl font-black mb-6 uppercase italic text-[#00E5FF]">Programar Ingreso</h3>
             <div className="space-y-4">
               <select 
-                className="w-full bg-black/40 border border-gray-700 rounded-xl p-3 text-sm outline-none"
+                className={themeInput}
                 onChange={(e) => setIngresoData({...ingresoData, id: Number(e.target.value)})}
               >
                 <option value="0">Seleccionar Vehículo...</option>
@@ -155,7 +159,7 @@ export default function TallerPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-[10px] font-bold text-gray-500 uppercase">Tipo</label>
-                  <select className="w-full bg-black/40 border border-gray-700 rounded-xl p-3 text-sm mt-1 outline-none"
+                  <select className={`${themeInput} mt-1`}
                     onChange={(e) => setIngresoData({...ingresoData, tipo: e.target.value})}>
                     <option value="Preventivo">Preventivo</option>
                     <option value="Correctivo">Correctivo</option>
@@ -163,7 +167,7 @@ export default function TallerPage() {
                 </div>
                 <div>
                   <label className="text-[10px] font-bold text-gray-500 uppercase">Tarea</label>
-                  <input placeholder="Ej: Kit de Arrastre" className="w-full bg-black/40 border border-gray-700 rounded-xl p-3 text-sm mt-1 outline-none"
+                  <input placeholder="Ej: Kit de Arrastre" className={`${themeInput} mt-1`}
                     onChange={(e) => setIngresoData({...ingresoData, tarea: e.target.value})} />
                 </div>
               </div>
@@ -171,19 +175,19 @@ export default function TallerPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-[10px] font-bold text-gray-500 uppercase">Fecha Ingreso</label>
-                  <input type="date" className="w-full bg-black/40 border border-gray-700 rounded-xl p-3 text-sm mt-1 outline-none"
+                  <input type="date" className={`${themeInput} mt-1`}
                     value={ingresoData.fechaInicio}
                     onChange={(e) => setIngresoData({...ingresoData, fechaInicio: e.target.value})} />
                 </div>
                 <div>
                   <label className="text-[10px] font-bold text-gray-500 uppercase">Salida Estimada</label>
-                  <input type="date" className="w-full bg-black/40 border border-gray-700 rounded-xl p-3 text-sm mt-1 outline-none text-[#00E5FF]"
+                  <input type="date" className={`${themeInput} mt-1 ${highContrast ? 'text-black' : 'text-[#00E5FF]'}`}
                     onChange={(e) => setIngresoData({...ingresoData, fechaFin: e.target.value})} />
                 </div>
               </div>
             </div>
             <div className="flex gap-3 mt-8">
-              <button onClick={() => setMostrarNuevoMant(false)} className="flex-1 py-3 text-xs font-bold uppercase text-gray-500">Cancelar</button>
+              <button onClick={() => setMostrarNuevoMant(false)} className={`flex-1 py-3 text-xs font-bold uppercase ${highContrast ? 'text-gray-700' : 'text-gray-500'}`}>Cancelar</button>
               <button onClick={registrarIngreso} className="flex-1 bg-[#00E5FF] text-black py-3 rounded-xl font-black text-xs uppercase">Confirmar Orden</button>
             </div>
           </div>
@@ -197,9 +201,9 @@ export default function TallerPage() {
             <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
               {vehiculos.flatMap(v => (v.historial || []).map(reg => ({...reg, modelo: v.modelo, placa: v.placa})))
                 .map(item => (
-                  <div key={item.id} className="p-4 rounded-2xl bg-white/5 border border-white/5 flex justify-between items-center">
+                  <div key={item.id} className={`p-4 rounded-2xl border flex justify-between items-center ${themeOverlayItem}`}>
                     <div className="flex gap-4 items-center">
-                      <div className={`text-[10px] p-2 rounded-lg bg-black/40 font-bold border ${item.tipo === 'Correctivo' ? 'border-red-900 text-red-500' : 'border-green-900 text-green-500'}`}>
+                      <div className={`text-[10px] p-2 rounded-lg font-bold border ${highContrast ? 'bg-white' : 'bg-black/40'} ${item.tipo === 'Correctivo' ? 'border-red-900 text-red-500' : 'border-green-900 text-green-500'}`}>
                         {item.tipo.substring(0,4)}
                       </div>
                       <div>
@@ -207,7 +211,7 @@ export default function TallerPage() {
                         <p className="text-sm font-bold uppercase">{item.modelo} - {item.descripcion}</p>
                       </div>
                     </div>
-                    <p className="font-black text-lg text-white">${item.costo.toLocaleString()}</p>
+                    <p className={`font-black text-lg ${highContrast ? 'text-black' : 'text-white'}`}>${item.costo.toLocaleString()}</p>
                   </div>
                 ))}
             </div>
@@ -223,7 +227,7 @@ export default function TallerPage() {
             <p className="text-xs text-gray-500 mb-6 italic">{(motoAFinalizar as any).tareaPendiente}</p>
             <input 
               type="number" autoFocus placeholder="Costo Total ($)"
-              className="w-full bg-black/40 border border-gray-700 rounded-xl p-4 text-xl font-bold text-white outline-none"
+              className={`${highContrast ? 'w-full bg-white border border-gray-300 rounded-xl p-4 text-xl font-bold text-black outline-none' : 'w-full bg-black/40 border border-gray-700 rounded-xl p-4 text-xl font-bold text-white outline-none'}`}
               onChange={(e) => setServicioData({costo: Number(e.target.value)})}
             />
             <button onClick={finalizarServicio} className="w-full bg-[#00E5FF] text-black py-4 rounded-2xl font-black text-xs uppercase mt-8">Dar de Alta</button>

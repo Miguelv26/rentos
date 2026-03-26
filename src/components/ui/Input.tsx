@@ -21,7 +21,7 @@ export const Input: React.FC<InputProps> = ({ label, error, className = '', ...p
         id={inputId}
         aria-invalid={Boolean(error)}
         aria-describedby={error ? errorId : undefined}
-        className={`w-full bg-[#1A1A24] border ${error ? 'border-red-500' : 'border-gray-700'} rounded-lg p-2.5 text-sm text-white focus:border-[#00E5FF] focus:outline-none transition ${className}`}
+        className={`w-full input-theme border ${error ? 'border-red-500' : ''} rounded-lg p-2.5 text-sm focus:border-[#00E5FF] focus:outline-none transition ${className}`}
         {...props}
       />
       {error && <p id={errorId} role="alert" className="text-red-500 text-xs mt-1">{error}</p>}
