@@ -16,10 +16,17 @@ export default function ClienteDetallePage() {
   const params = useParams<{ id: string }>();
   const clienteId = params.id;
 
-  const { clientes, actualizarCliente } = useClientes();
+  const { clientes, agregarIncidente, pagarIncidente } = useClientes();
   const { reservas } = useReservas();
   const { vehiculos } = useVehiculos();
-  const { t } = useConfig();
+  const { t, highContrast } = useConfig();
+
+  const linkGhost = highContrast
+    ? 'bg-gray-200 hover:bg-gray-300 text-black px-4 py-2 rounded-lg text-sm'
+    : 'bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg text-sm';
+  const controlInput = highContrast
+    ? 'w-full bg-white border border-gray-300 rounded-lg p-2 text-sm text-black'
+    : 'w-full bg-black/30 border border-gray-700 rounded-lg p-2 text-sm text-white';
 
   const [nuevoIncidente, setNuevoIncidente] = useState({
     tipo: 'multa' as ClienteIncidente['tipo'],
@@ -60,14 +67,27 @@ export default function ClienteDetallePage() {
       descripcion: nuevoIncidente.descripcion,
       fecha: new Date().toISOString().split('T')[0],
       monto: nuevoIncidente.monto ? Number(nuevoIncidente.monto) : undefined,
+      pagado: false,
     };
 
-    actualizarCliente(cliente.id, {
-      incidentes: [...(cliente.incidentes ?? []), incidente],
-    });
+    try {
+      agregarIncidente(cliente.id, incidente);
+      setNuevoIncidente({ tipo: 'multa', descripcion: '', monto: '' });
+      toast.success(t('clienteDetalle', 'successIncidente'));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'No se pudo agregar el incidente';
+      toast.error(message);
+    }
+  };
 
-    setNuevoIncidente({ tipo: 'multa', descripcion: '', monto: '' });
-    toast.success(t('clienteDetalle', 'successIncidente'));
+  const handlePagarIncidente = (incidenteId: string) => {
+    try {
+      pagarIncidente(cliente.id, incidenteId);
+      toast.success('Multa marcada como pagada');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'No se pudo registrar el pago';
+      toast.error(message);
+    }
   };
 
   return (
@@ -78,7 +98,7 @@ export default function ClienteDetallePage() {
             <h1 className="text-3xl font-black italic uppercase">{t('clienteDetalle', 'ficha')}</h1>
             <p className="text-gray-400">{cliente.nombre} · {cliente.numeroDocumento}</p>
           </div>
-          <Link href="/dashboard/clientes" className="bg-white/10 px-4 py-2 rounded-lg text-sm">{t('clienteDetalle', 'volver')}</Link>
+          <Link href="/dashboard/clientes" className={linkGhost}>{t('clienteDetalle', 'volver')}</Link>
         </div>
 
         {stats.riesgoAlto && (
@@ -104,6 +124,7 @@ export default function ClienteDetallePage() {
           <div className="bg-[#1E1E1E] border border-gray-800 rounded-xl p-4">
             <p className="text-xs text-gray-400 uppercase">{t('clienteDetalle', 'multasDanos')}</p>
             <p className="text-2xl font-black text-orange-400">${stats.totalMultas.toLocaleString()}</p>
+            <p className="text-xs text-gray-500 mt-1">Saldo pendiente actual</p>
           </div>
         </div>
 
@@ -131,7 +152,7 @@ export default function ClienteDetallePage() {
                   id="tipoIncidente"
                   value={nuevoIncidente.tipo}
                   onChange={(event) => setNuevoIncidente((prev) => ({ ...prev, tipo: event.target.value as ClienteIncidente['tipo'] }))}
-                  className="w-full bg-black/30 border border-gray-700 rounded-lg p-2 text-sm"
+                  className={controlInput}
                 >
                   <option value="multa">{t('clienteDetalle', 'multa')}</option>
                   <option value="dano">{t('clienteDetalle', 'dano')}</option>
@@ -145,7 +166,7 @@ export default function ClienteDetallePage() {
                   id="descripcionIncidente"
                   value={nuevoIncidente.descripcion}
                   onChange={(event) => setNuevoIncidente((prev) => ({ ...prev, descripcion: event.target.value }))}
-                  className="w-full bg-black/30 border border-gray-700 rounded-lg p-2 text-sm"
+                  className={controlInput}
                 />
               </div>
             </div>
@@ -159,7 +180,7 @@ export default function ClienteDetallePage() {
                   min={0}
                   value={nuevoIncidente.monto}
                   onChange={(event) => setNuevoIncidente((prev) => ({ ...prev, monto: event.target.value }))}
-                  className="w-full bg-black/30 border border-gray-700 rounded-lg p-2 text-sm"
+                  className={controlInput}
                 />
               </div>
               <button type="button" onClick={addIncidente} className="bg-[#00E5FF] text-black font-bold px-4 py-2 rounded-lg">{t('clienteDetalle', 'agregar')}</button>
@@ -168,10 +189,40 @@ export default function ClienteDetallePage() {
             <div className="space-y-2">
               {stats.incidentes.length === 0 && <p className="text-sm text-gray-400">{t('clienteDetalle', 'sinIncidentes')}</p>}
               {stats.incidentes.map((incidente) => (
-                <div key={incidente.id} className="border border-gray-700 rounded-lg p-3 text-sm">
-                  <p className="font-bold capitalize">{incidente.tipo}</p>
-                  <p className="text-gray-400">{incidente.descripcion}</p>
-                  <p className="text-gray-500 text-xs mt-1">{incidente.fecha}{incidente.monto ? ` · $${incidente.monto}` : ''}</p>
+                <div key={incidente.id} className="border border-gray-700 rounded-lg p-3 text-sm space-y-2">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="font-bold capitalize">{incidente.tipo}</p>
+                      <p className="text-gray-400">{incidente.descripcion}</p>
+                      <p className="text-gray-500 text-xs mt-1">
+                        {incidente.fecha}
+                        {incidente.monto ? ` · $${incidente.monto}` : ''}
+                        {incidente.pagado && incidente.fechaPago ? ` · Pagado el ${incidente.fechaPago}` : ''}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col items-end gap-2">
+                      <span
+                        className={`text-[11px] font-bold px-2 py-1 rounded-full border ${
+                          incidente.pagado
+                            ? 'text-green-300 border-green-500/40 bg-green-500/10'
+                            : 'text-orange-300 border-orange-500/40 bg-orange-500/10'
+                        }`}
+                      >
+                        {incidente.pagado ? 'Pagada' : 'Pendiente'}
+                      </span>
+
+                      {!incidente.pagado && (incidente.monto ?? 0) > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => handlePagarIncidente(incidente.id)}
+                          className="text-xs font-bold px-3 py-1.5 rounded-lg border border-[#00E5FF]/40 text-[#00E5FF] hover:bg-[#00E5FF]/10"
+                        >
+                          Registrar pago
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>

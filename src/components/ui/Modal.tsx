@@ -43,7 +43,13 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
 
     const setInitialFocus = () => {
       const focusable = getFocusableElements();
-      const target = closeBtnRef.current || focusable[0] || containerRef.current;
+
+      const firstField = focusable.find((el) => {
+        const tag = el.tagName;
+        return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+      });
+
+      const target = firstField || closeBtnRef.current || focusable[0] || containerRef.current;
       target?.focus();
     };
 
@@ -98,7 +104,7 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
   };
 
   return (
-    <div 
+    <div
       ref={overlayRef}
       className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4 overflow-y-auto"
       role="dialog"
@@ -110,16 +116,20 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
         }
       }}
     >
-      <div ref={containerRef} tabIndex={-1} className={`bg-[#1E1E1E] p-8 rounded-2xl w-full ${sizes[size]} shadow-2xl border border-gray-800 my-auto`}>
+      <div
+        ref={containerRef}
+        tabIndex={-1}
+        className={`modal-surface p-8 rounded-2xl w-full ${sizes[size]} shadow-2xl border my-auto`}
+      >
         {title && (
           <div className="flex justify-between items-center mb-6">
-            <h2 id={dialogId} className="text-2xl font-black uppercase italic text-white">
+            <h2 id={dialogId} className="modal-title text-2xl font-black uppercase italic">
               {title}
             </h2>
             <button
               ref={closeBtnRef}
               onClick={onClose}
-              className="text-gray-400 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00E5FF] transition"
+              className="modal-close focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00E5FF] transition"
               aria-label="Cerrar modal"
             >
               ✕
