@@ -1,6 +1,7 @@
 import { Cliente, ClienteIncidente } from '@/data/ClientesData';
 import { Reserva } from '@/data/HU3_ReservasData';
 import { Vehiculo } from '@/data/HU1_VehiculosData';
+import { getIncidentesPendientes, getTotalMultasPendientes } from '@/hooks/clientes.utils';
 
 export interface ClienteHistorialStats {
   ltv: number;
@@ -41,8 +42,9 @@ export const buildClienteHistorialStats = (
     .slice(0, 3);
 
   const incidentes = cliente.incidentes ?? [];
-  const totalMultas = incidentes.reduce((acc, incidente) => acc + (incidente.monto ?? 0), 0);
-  const riesgoAlto = incidentes.length >= 2 || totalMultas >= 300;
+  const incidentesPendientes = getIncidentesPendientes(incidentes);
+  const totalMultas = getTotalMultasPendientes(incidentes);
+  const riesgoAlto = incidentesPendientes.length >= 2 || totalMultas >= 300;
 
   return {
     ltv,

@@ -4,6 +4,8 @@ export interface ClienteIncidente {
   descripcion: string;
   fecha: string;
   monto?: number;
+  pagado?: boolean;
+  fechaPago?: string;
 }
 
 export interface Cliente {
@@ -97,6 +99,7 @@ export const ClientesMock: Cliente[] = [
         descripcion: 'Exceso de velocidad en zona urbana',
         fecha: '2026-02-14',
         monto: 180,
+        pagado: false,
       },
       {
         id: 'inc-002',
@@ -104,6 +107,7 @@ export const ClientesMock: Cliente[] = [
         descripcion: 'Raspon lateral reportado en check-out',
         fecha: '2026-01-22',
         monto: 140,
+        pagado: false,
       },
     ]
   },

@@ -43,7 +43,13 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
 
     const setInitialFocus = () => {
       const focusable = getFocusableElements();
-      const target = closeBtnRef.current || focusable[0] || containerRef.current;
+
+      const firstField = focusable.find((el) => {
+        const tag = el.tagName;
+        return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+      });
+
+      const target = firstField || closeBtnRef.current || focusable[0] || containerRef.current;
       target?.focus();
     };
 
@@ -98,7 +104,7 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
   };
 
   return (
-    <div 
+    <div
       ref={overlayRef}
       className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4 overflow-y-auto"
       role="dialog"
