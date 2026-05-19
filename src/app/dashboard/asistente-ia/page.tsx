@@ -4,6 +4,7 @@ import MainLayout from '@/components/MainLayout';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { useConfig } from '@/context/ConfigContext';
+import { api } from '@/lib/api';
 
 interface Mensaje {
   id: string;
@@ -18,32 +19,14 @@ export default function AsistenteIAPage() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const respuestasMock = {
-    comprar: t('assistantIA', 'respComprar'),
-    adquirir: t('assistantIA', 'respAdquirir'),
-    mantenimiento: t('assistantIA', 'respMantenimiento'),
-    precio: t('assistantIA', 'respPrecio'),
-    tarifa: t('assistantIA', 'respTarifa'),
-    default: t('assistantIA', 'respDefault'),
-  };
-
-  const obtenerRespuesta = (pregunta: string): string => {
-    const preguntaLower = pregunta.toLowerCase();
-    const reglas = [
-      { keys: lang === 'en' ? ['buy', 'purchase'] : ['comprar'], value: respuestasMock.comprar },
-      { keys: lang === 'en' ? ['acquire', 'expand'] : ['adquirir'], value: respuestasMock.adquirir },
-      { keys: ['mantenimiento', 'maintenance'], value: respuestasMock.mantenimiento },
-      { keys: ['precio', 'price', 'pricing'], value: respuestasMock.precio },
-      { keys: ['tarifa', 'rate', 'rates'], value: respuestasMock.tarifa },
-    ];
-
-    for (const regla of reglas) {
-      if (regla.keys.some((keyword) => preguntaLower.includes(keyword))) {
-        return regla.value;
-      }
+  const obtenerRespuesta = async (pregunta: string): Promise<string> => {
+    try {
+      const data = await api.post<{ response: string }>('/rag/chat', { message: pregunta });
+      return data.response;
+    } catch (error) {
+      console.error('Error consultando asistente IA:', error);
+      return 'No pude conectarme con el asistente del backend. Revisa que el backend esté corriendo en http://localhost:3001.';
     }
-
-    return respuestasMock.default;
   };
 
   const enviarMensaje = async () => {
@@ -60,10 +43,7 @@ export default function AsistenteIAPage() {
     setInput('');
     setLoading(true);
 
-    // Simular delay de IA (mínimo 1.5 segundos)
-    await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000));
-
-    const respuesta = obtenerRespuesta(input);
+    const respuesta = await obtenerRespuesta(input);
     const mensajeAsistente: Mensaje = {
       id: (Date.now() + 1).toString(),
       tipo: 'asistente',
@@ -81,8 +61,8 @@ export default function AsistenteIAPage() {
         <div className="text-center">
           <h1 className="text-3xl font-black italic uppercase mb-2">🤖 {t('assistantIA', 'title')}</h1>
           <p className="text-gray-500">{t('assistantIA', 'subtitle')}</p>
-          <div className="mt-4 inline-block bg-orange-500/10 border border-orange-500/30 rounded-lg px-4 py-2">
-            <p className="text-xs text-orange-400 font-bold">⚠️ {t('assistantIA', 'demoMode')}</p>
+          <div className="mt-4 inline-block bg-green-500/10 border border-green-500/30 rounded-lg px-4 py-2">
+            <p className="text-xs text-green-400 font-bold">✅ Conectado al endpoint /rag/chat del backend</p>
           </div>
         </div>
 

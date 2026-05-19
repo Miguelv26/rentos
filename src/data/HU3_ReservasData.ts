@@ -17,6 +17,7 @@ export interface PagoReserva {
 export interface Reserva {
   id: string;
   vehiculoId: number;
+  clienteId?: string;
   cliente: string;
   documento: string;
   fechaInicio: string;
