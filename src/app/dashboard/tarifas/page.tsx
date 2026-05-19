@@ -41,16 +41,27 @@ export default function TarifasPage() {
   return (
     <MainLayout>
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-black italic uppercase">💰 Configurador de Tarifas</h1>
+        <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
+          <div className="min-w-0">
+            <h1 className="text-2xl md:text-3xl font-black italic uppercase leading-tight break-words">
+              💰 Configurador de Tarifas
+            </h1>
             <p className="text-gray-500">Reglas de precios dinámicos</p>
           </div>
-          <div className="flex gap-3">
-            <Button variant="secondary" onClick={() => setMostrarCalculadora(true)}>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:flex md:shrink-0">
+            <Button
+              variant="secondary"
+              onClick={() => setMostrarCalculadora(true)}
+              className="w-full md:w-auto"
+            >
               🧮 Calculadora
             </Button>
-            <Button onClick={() => setMostrarModal(true)}>
+
+            <Button
+              onClick={() => setMostrarModal(true)}
+              className="w-full md:w-auto"
+            >
               + Nueva Regla
             </Button>
           </div>
