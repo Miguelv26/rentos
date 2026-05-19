@@ -1,5 +1,5 @@
 "use client";
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import MainLayout from '@/components/MainLayout';
 import { useClientes } from '@/hooks/useClientes';
 import { Cliente } from '@/data/ClientesData';
@@ -36,8 +36,40 @@ export default function ClientesPage() {
 
   const clientesFiltrados = busqueda ? buscarClientes(busqueda) : clientes;
 
+  const resetForm = useCallback(() => {
+    setFormData({
+      nombre: '',
+      tipoDocumento: 'CC',
+      numeroDocumento: '',
+      telefono: '',
+      email: '',
+      fechaNacimiento: '',
+      licencia: { numero: '', categoria: 'A2', fechaVencimiento: '' },
+      direccion: '',
+      avatar: ''
+    });
+    setClienteEditar(null);
+  }, []);
+
+  const cerrarModal = useCallback(() => {
+    setMostrarModal(false);
+    resetForm();
+  }, [resetForm]);
+
+  const abrirNuevoCliente = useCallback(() => {
+    resetForm();
+    setMostrarModal(true);
+  }, [resetForm]);
+
+  const abrirEdicion = useCallback((cliente: Cliente) => {
+    setClienteEditar(cliente);
+    setFormData(cliente);
+    setMostrarModal(true);
+  }, []);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
     try {
       if (clienteEditar) {
         actualizarCliente(clienteEditar.id, formData);
@@ -58,36 +90,16 @@ export default function ClientesPage() {
           direccion: formData.direccion ?? '',
           avatar: formData.avatar,
         };
+
         crearCliente(payload);
         toast.success(t('clientesHu', 'successCreado'));
       }
-      setMostrarModal(false);
-      resetForm();
+
+      cerrarModal();
     } catch (error) {
       const message = error instanceof Error ? error.message : t('clientesHu', 'errorGuardar');
       toast.error(message);
     }
-  };
-
-  const resetForm = () => {
-    setFormData({
-      nombre: '',
-      tipoDocumento: 'CC',
-      numeroDocumento: '',
-      telefono: '',
-      email: '',
-      fechaNacimiento: '',
-      licencia: { numero: '', categoria: 'A2', fechaVencimiento: '' },
-      direccion: '',
-      avatar: ''
-    });
-    setClienteEditar(null);
-  };
-
-  const abrirEdicion = (cliente: Cliente) => {
-    setClienteEditar(cliente);
-    setFormData(cliente);
-    setMostrarModal(true);
   };
 
   const getClasificacion = (cliente: Cliente) => {
@@ -105,12 +117,11 @@ export default function ClientesPage() {
             <h1 className="text-3xl font-black italic uppercase">👥 {t('clientesHu', 'title')}</h1>
             <p className="text-gray-500">{t('clientesHu', 'subtitle')}</p>
           </div>
-          <Button onClick={() => { resetForm(); setMostrarModal(true); }}>
+          <Button onClick={abrirNuevoCliente}>
             {t('clientesHu', 'nuevo')}
           </Button>
         </div>
 
-        {/* Búsqueda */}
         <div className="flex gap-4">
           <Input
             id="clientes-busqueda"
@@ -122,7 +133,6 @@ export default function ClientesPage() {
           />
         </div>
 
-        {/* Tabla */}
         <div className="bg-[#1E1E1E] border border-gray-800 rounded-xl overflow-hidden">
           <Table caption={t('clientesHu', 'tablaCaption')}>
             <TableHeader>
@@ -139,12 +149,13 @@ export default function ClientesPage() {
             <TableBody>
               {clientesFiltrados.map((cliente) => {
                 const clasificacion = getClasificacion(cliente);
+
                 return (
                   <TableRow key={cliente.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <img 
-                          src={cliente.avatar || 'https://via.placeholder.com/40'} 
+                        <img
+                          src={cliente.avatar || 'https://via.placeholder.com/40'}
                           alt={cliente.nombre}
                           className="w-10 h-10 rounded-full object-cover"
                         />
@@ -154,21 +165,25 @@ export default function ClientesPage() {
                         </div>
                       </div>
                     </TableCell>
+
                     <TableCell>
                       <p className="text-xs text-gray-400">{cliente.tipoDocumento}</p>
                       <p className="font-mono text-sm">{cliente.numeroDocumento}</p>
                     </TableCell>
+
                     <TableCell>
                       <p className="text-sm">{cliente.telefono}</p>
                     </TableCell>
+
                     <TableCell>
                       <p className="text-lg font-black text-[#00E5FF]">{cliente.reservasTotales}</p>
                       <p className="text-xs text-gray-500">${cliente.totalGastado.toLocaleString()}</p>
                     </TableCell>
+
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <div className="w-12 h-2 bg-gray-800 rounded-full overflow-hidden">
-                          <div 
+                          <div
                             className={`h-full ${cliente.score >= 70 ? 'bg-green-500' : cliente.score >= 40 ? 'bg-orange-500' : 'bg-red-500'}`}
                             style={{ width: `${cliente.score}%` }}
                           ></div>
@@ -176,15 +191,25 @@ export default function ClientesPage() {
                         <span className="text-xs font-bold">{cliente.score}</span>
                       </div>
                     </TableCell>
+
                     <TableCell>
                       <Badge variant={clasificacion.variant}>{clasificacion.label}</Badge>
                     </TableCell>
+
                     <TableCell>
                       <div className="flex gap-2">
                         <Link href={`/dashboard/clientes/${cliente.id}`}>
-                          <Button size="sm" variant="ghost" aria-label={`${t('clientesHu', 'ver')} ${cliente.nombre}`}>{t('clientesHu', 'ver')}</Button>
+                          <Button size="sm" variant="ghost" aria-label={`${t('clientesHu', 'ver')} ${cliente.nombre}`}>
+                            {t('clientesHu', 'ver')}
+                          </Button>
                         </Link>
-                        <Button size="sm" variant="secondary" onClick={() => abrirEdicion(cliente)} aria-label={`${t('clientesHu', 'editar')} ${cliente.nombre}`}>
+
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => abrirEdicion(cliente)}
+                          aria-label={`${t('clientesHu', 'editar')} ${cliente.nombre}`}
+                        >
                           {t('clientesHu', 'editar')}
                         </Button>
                       </div>
@@ -196,10 +221,9 @@ export default function ClientesPage() {
           </Table>
         </div>
 
-        {/* Modal Formulario */}
-        <Modal 
-          isOpen={mostrarModal} 
-          onClose={() => { setMostrarModal(false); resetForm(); }}
+        <Modal
+          isOpen={mostrarModal}
+          onClose={cerrarModal}
           title={clienteEditar ? `✏️ ${t('clientesHu', 'modalEditar')}` : `➕ ${t('clientesHu', 'modalNuevo')}`}
           size="lg"
         >
@@ -222,7 +246,9 @@ export default function ClientesPage() {
 
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="block text-[10px] font-bold uppercase text-gray-500 mb-1">{t('clientesHu', 'tipoDocumento')}</label>
+                <label className="block text-[10px] font-bold uppercase text-gray-500 mb-1">
+                  {t('clientesHu', 'tipoDocumento')}
+                </label>
                 <select
                   className={selectClass}
                   value={formData.tipoDocumento}
@@ -233,6 +259,7 @@ export default function ClientesPage() {
                   <option value="CE">CE</option>
                 </select>
               </div>
+
               <Input
                 label={t('clientesHu', 'numeroDocumento')}
                 value={formData.numeroDocumento}
@@ -269,34 +296,59 @@ export default function ClientesPage() {
               <Input
                 label={t('clientesHu', 'licenciaNumero')}
                 value={formData.licencia?.numero}
-                onChange={(e) => setFormData({ ...formData, licencia: { ...formData.licencia!, numero: e.target.value } })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    licencia: { ...formData.licencia!, numero: e.target.value }
+                  })
+                }
                 required
               />
+
               <div>
-                <label className="block text-[10px] font-bold uppercase text-gray-500 mb-1">{t('clientesHu', 'categoria')}</label>
+                <label className="block text-[10px] font-bold uppercase text-gray-500 mb-1">
+                  {t('clientesHu', 'categoria')}
+                </label>
                 <select
                   className={selectClass}
                   value={formData.licencia?.categoria}
-                  onChange={(e) => setFormData({ ...formData, licencia: { ...formData.licencia!, categoria: e.target.value } })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      licencia: { ...formData.licencia!, categoria: e.target.value }
+                    })
+                  }
                 >
                   <option value="A1">A1</option>
                   <option value="A2">A2</option>
                   <option value="B1">B1</option>
                 </select>
               </div>
+
               <Input
                 label={t('clientesHu', 'vencimiento')}
                 type="date"
                 value={formData.licencia?.fechaVencimiento}
-                onChange={(e) => setFormData({ ...formData, licencia: { ...formData.licencia!, fechaVencimiento: e.target.value } })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    licencia: { ...formData.licencia!, fechaVencimiento: e.target.value }
+                  })
+                }
                 required
               />
             </div>
 
             <div className="flex gap-3 pt-4">
-              <Button type="button" variant="ghost" onClick={() => { setMostrarModal(false); resetForm(); }} className="flex-1">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={cerrarModal}
+                className="flex-1"
+              >
                 {t('clientesHu', 'cancelar')}
               </Button>
+
               <Button type="submit" className="flex-1">
                 {clienteEditar ? t('clientesHu', 'actualizar') : t('clientesHu', 'crear')} {t('clientesHu', 'cliente')}
               </Button>
