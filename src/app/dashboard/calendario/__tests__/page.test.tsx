@@ -1,6 +1,13 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import CalendarioPage from '@/app/dashboard/calendario/page';
 
+const buildIsoDate = (offsetDays: number) => {
+  const base = new Date();
+  base.setHours(0, 0, 0, 0);
+  base.setDate(base.getDate() + offsetDays);
+  return base.toISOString().split('T')[0];
+};
+
 jest.mock('@/components/MainLayout', () => ({
   __esModule: true,
   default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -34,12 +41,12 @@ jest.mock('@/hooks/useReservas', () => ({
         vehiculoId: 1,
         cliente: 'Juan',
         documento: '123',
-        fechaInicio: '2026-03-18',
-        fechaFin: '2026-03-19',
+        fechaInicio: buildIsoDate(0),
+        fechaFin: buildIsoDate(1),
         desglose: { dias: 2, precioDia: 50, totalExtras: 0, deposito: 20 },
         totalFinal: 100,
         estado: 'confirmada',
-        pago: { metodoPago: 'efectivo', estado: 'procesado', fechaOperacion: '2026-03-18' },
+        pago: { metodoPago: 'efectivo', estado: 'procesado', fechaOperacion: buildIsoDate(0) },
       },
     ],
   }),
@@ -50,7 +57,7 @@ describe('CalendarioPage (HU 2.2)', () => {
   it('opens detail modal when clicking occupied cell', () => {
     render(<CalendarioPage />);
 
-    const occupiedButton = screen.getAllByRole('button', { name: /reserva\(s\)/i })[0];
+    const occupiedButton = screen.getByRole('button', { name: /1 reserva\(s\)/i });
     fireEvent.click(occupiedButton);
 
     expect(screen.getByRole('dialog', { name: /detalle de ocupación/i })).toBeInTheDocument();

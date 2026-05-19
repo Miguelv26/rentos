@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { useDashboard } from '@/hooks/useDashboard';
 import { useVehiculos } from '@/hooks/useVehiculos';
 import { useReservas } from '@/hooks/useReservas';
@@ -11,6 +11,12 @@ jest.mock('@/hooks/useClientes');
 describe('useDashboard', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-05-18T10:00:00.000Z'));
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   it('calculates current month income correctly', () => {
@@ -23,16 +29,16 @@ describe('useDashboard', () => {
       {
         id: 'res-1',
         vehiculoId: 1,
-        fechaInicio: '2026-03-15',
-        fechaFin: '2026-03-17',
+        fechaInicio: '2026-05-15',
+        fechaFin: '2026-05-17',
         totalFinal: 100000,
         estado: 'confirmada'
       },
       {
         id: 'res-2',
         vehiculoId: 2,
-        fechaInicio: '2026-03-18',
-        fechaFin: '2026-03-20',
+        fechaInicio: '2026-05-18',
+        fechaFin: '2026-05-20',
         totalFinal: 150000,
         estado: 'confirmada'
       }
@@ -94,16 +100,16 @@ describe('useDashboard', () => {
       {
         id: 'res-1',
         vehiculoId: 1,
-        fechaInicio: '2026-03-15',
-        fechaFin: '2026-03-17',
+        fechaInicio: '2026-05-15',
+        fechaFin: '2026-05-17',
         totalFinal: 100000,
         estado: 'confirmada'
       },
       {
         id: 'res-2',
         vehiculoId: 2,
-        fechaInicio: '2026-03-16',
-        fechaFin: '2026-03-18',
+        fechaInicio: '2026-05-16',
+        fechaFin: '2026-05-18',
         totalFinal: 200000,
         estado: 'cancelada'
       }
@@ -125,10 +131,10 @@ describe('useDashboard', () => {
     ];
 
     const mockReservas = [
-      { id: 'res-1', vehiculoId: 1, estado: 'confirmada', fechaInicio: '2026-03-01' },
-      { id: 'res-2', vehiculoId: 1, estado: 'confirmada', fechaInicio: '2026-03-05' },
-      { id: 'res-3', vehiculoId: 1, estado: 'confirmada', fechaInicio: '2026-03-10' },
-      { id: 'res-4', vehiculoId: 2, estado: 'confirmada', fechaInicio: '2026-03-12' }
+      { id: 'res-1', vehiculoId: 1, estado: 'confirmada', fechaInicio: '2026-05-01' },
+      { id: 'res-2', vehiculoId: 1, estado: 'confirmada', fechaInicio: '2026-05-05' },
+      { id: 'res-3', vehiculoId: 1, estado: 'confirmada', fechaInicio: '2026-05-10' },
+      { id: 'res-4', vehiculoId: 2, estado: 'confirmada', fechaInicio: '2026-05-12' }
     ];
 
     (useVehiculos as jest.Mock).mockReturnValue({ vehiculos: mockVehiculos });
@@ -147,8 +153,8 @@ describe('useDashboard', () => {
       id: `res-${i}`,
       vehiculoId: 1,
       cliente: `Cliente ${i}`,
-      fechaInicio: `2026-03-${String(i + 1).padStart(2, '0')}`,
-      fechaFin: `2026-03-${String(i + 2).padStart(2, '0')}`,
+      fechaInicio: `2026-05-${String(i + 1).padStart(2, '0')}`,
+      fechaFin: `2026-05-${String(i + 2).padStart(2, '0')}`,
       totalFinal: 100000,
       estado: 'confirmada' as const
     }));
@@ -168,8 +174,8 @@ describe('useDashboard', () => {
       {
         id: 'res-1',
         vehiculoId: 1,
-        fechaInicio: '2026-03-15',
-        fechaFin: '2026-03-17',
+        fechaInicio: '2026-05-15',
+        fechaFin: '2026-05-17',
         totalFinal: 100000,
         estado: 'confirmada'
       }

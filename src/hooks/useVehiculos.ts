@@ -2,7 +2,17 @@ import { useState, useEffect } from 'react';
 import { Vehiculo, HU1_VehiculosMock } from '@/data/HU1_VehiculosData';
 import { api } from '@/lib/api';
 
-const toNumber = (value: unknown) => Number(value ?? 0);
+const toNumber = (value: unknown) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const tipoFallback: Vehiculo['tipo'] = 'Naked';
+
+const normalizeTipo = (value: unknown): Vehiculo['tipo'] => {
+  const tiposValidos: Vehiculo['tipo'][] = ['Sport', 'Adventure', 'Naked', 'Cruiser'];
+  return tiposValidos.includes(value as Vehiculo['tipo']) ? value as Vehiculo['tipo'] : tipoFallback;
+};
 
 const normalizeVehiculo = (vehiculo: Vehiculo): Vehiculo => ({
   ...vehiculo,
@@ -10,21 +20,26 @@ const normalizeVehiculo = (vehiculo: Vehiculo): Vehiculo => ({
   anio: Number(vehiculo.anio),
   kilometraje: toNumber(vehiculo.kilometraje),
   proximoMantenimiento: toNumber(vehiculo.proximoMantenimiento),
+  tipo: normalizeTipo(vehiculo.tipo),
   precioDia: toNumber(vehiculo.precioDia),
 });
 
-const toBackendPayload = (vehiculo: Vehiculo) => ({
+const toBackendPayload = (vehiculo: Vehiculo) => {
+  const normalizado = normalizeVehiculo(vehiculo);
+
+  return {
   modelo: vehiculo.modelo,
   marca: vehiculo.marca,
-  anio: Number(vehiculo.anio),
+  anio: normalizado.anio,
   placa: vehiculo.placa,
-  kilometraje: Number(vehiculo.kilometraje),
-  proximoMantenimiento: Number(vehiculo.proximoMantenimiento),
+  kilometraje: normalizado.kilometraje,
+  proximoMantenimiento: normalizado.proximoMantenimiento,
   estado: vehiculo.estado,
-  tipo: vehiculo.tipo,
-  precioDia: Number(vehiculo.precioDia),
+  tipo: normalizado.tipo,
+  precioDia: normalizado.precioDia,
   foto: vehiculo.foto,
-});
+  };
+};
 
 export const useVehiculos = () => {
   const [vehiculos, setVehiculosState] = useState<Vehiculo[]>([]);

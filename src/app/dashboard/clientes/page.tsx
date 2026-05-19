@@ -71,26 +71,26 @@ export default function ClientesPage() {
     e.preventDefault();
 
     try {
+      const payload: ClienteInput = {
+        nombre: formData.nombre ?? '',
+        tipoDocumento: formData.tipoDocumento ?? 'CC',
+        numeroDocumento: formData.numeroDocumento ?? '',
+        telefono: formData.telefono ?? '',
+        email: formData.email ?? '',
+        fechaNacimiento: formData.fechaNacimiento ?? '',
+        licencia: {
+          numero: formData.licencia?.numero ?? '',
+          categoria: formData.licencia?.categoria ?? 'A2',
+          fechaVencimiento: formData.licencia?.fechaVencimiento ?? '',
+        },
+        direccion: formData.direccion ?? '',
+        avatar: formData.avatar,
+      };
+
       if (clienteEditar) {
-        actualizarCliente(clienteEditar.id, formData);
+        actualizarCliente(clienteEditar.id, payload);
         toast.success(t('clientesHu', 'successActualizado'));
       } else {
-        const payload: ClienteInput = {
-          nombre: formData.nombre ?? '',
-          tipoDocumento: formData.tipoDocumento ?? 'CC',
-          numeroDocumento: formData.numeroDocumento ?? '',
-          telefono: formData.telefono ?? '',
-          email: formData.email ?? '',
-          fechaNacimiento: formData.fechaNacimiento ?? '',
-          licencia: {
-            numero: formData.licencia?.numero ?? '',
-            categoria: formData.licencia?.categoria ?? 'A2',
-            fechaVencimiento: formData.licencia?.fechaVencimiento ?? '',
-          },
-          direccion: formData.direccion ?? '',
-          avatar: formData.avatar,
-        };
-
         crearCliente(payload);
         toast.success(t('clientesHu', 'successCreado'));
       }

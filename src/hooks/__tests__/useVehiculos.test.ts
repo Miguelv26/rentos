@@ -1,75 +1,111 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useVehiculos } from '@/hooks/useVehiculos';
 import { Vehiculo } from '@/data/HU1_VehiculosData';
+import { api } from '@/lib/api';
+
+jest.mock('@/lib/api', () => ({
+  api: {
+    get: jest.fn(),
+    post: jest.fn(),
+    patch: jest.fn(),
+    delete: jest.fn(),
+  },
+}));
+
+const mockedApi = api as jest.Mocked<typeof api>;
 
 describe('useVehiculos', () => {
   beforeEach(() => {
-    localStorage.clear();
+    jest.clearAllMocks();
   });
 
-  it('loads vehicles from localStorage if available', async () => {
-    const mockVehiculos: Vehiculo[] = [
+  it('carga vehículos desde api y normaliza los campos numéricos', async () => {
+    mockedApi.get.mockResolvedValueOnce([
       {
-        id: 1,
+        id: '1',
         placa: 'ABC123',
         modelo: 'Honda CB500',
         marca: 'Honda',
-        anio: 2023,
+        anio: '2023',
         estado: 'available',
         tipo: 'Naked',
         foto: '/test.jpg',
-        precioDia: 50,
-        kilometraje: 1000,
-        proximoMantenimiento: 5000
-      }
-    ];
-
-    localStorage.setItem('rentos_flota', JSON.stringify(mockVehiculos));
+        precioDia: '50',
+        kilometraje: '1000',
+        proximoMantenimiento: '5000',
+      },
+    ] as unknown as Vehiculo[]);
 
     const { result } = renderHook(() => useVehiculos());
 
     await waitFor(() => {
       expect(result.current.vehiculos).toHaveLength(1);
-      expect(result.current.vehiculos[0].placa).toBe('ABC123');
+    });
+
+    expect(result.current.vehiculos[0]).toMatchObject({
+      id: 1,
+      anio: 2023,
+      precioDia: 50,
+      kilometraje: 1000,
+      proximoMantenimiento: 5000,
+      tipo: 'Naked',
     });
   });
 
-  it('saves vehicles to localStorage when updated', async () => {
+  it('envía a api los valores reales al crear un vehículo', async () => {
+    mockedApi.get.mockResolvedValueOnce([]);
+    mockedApi.post.mockImplementation(async (_path, body) => ({
+      id: 999,
+      ...(body as object),
+    } as Vehiculo));
+
     const { result } = renderHook(() => useVehiculos());
 
     await waitFor(() => {
-      expect(result.current.vehiculos).toBeDefined();
+      expect(result.current.loading).toBe(false);
     });
 
-    const newVehicle: Vehiculo = {
-      id: 999,
+    mockedApi.post.mockClear();
+
+    const nuevoVehiculo: Vehiculo = {
+      id: 12345,
       placa: 'XYZ789',
       modelo: 'Yamaha MT-07',
       marca: 'Yamaha',
       anio: 2024,
       estado: 'available',
-      tipo: 'Naked',
+      tipo: 'Adventure',
       foto: '/yamaha.jpg',
       precioDia: 60,
       kilometraje: 500,
-      proximoMantenimiento: 5000
+      proximoMantenimiento: 5000,
     };
 
-    act(() => {
-      result.current.setVehiculos([...result.current.vehiculos, newVehicle]);
+    await act(async () => {
+      result.current.setVehiculos([nuevoVehiculo]);
+      await Promise.resolve();
     });
 
-    const saved = localStorage.getItem('rentos_flota');
-    expect(saved).toBeTruthy();
-    const parsed = JSON.parse(saved!);
-    expect(parsed.some((v: Vehiculo) => v.placa === 'XYZ789')).toBe(true);
+    await waitFor(() => {
+      expect(mockedApi.post).toHaveBeenCalledWith('/vehiculos', expect.objectContaining({
+        tipo: 'Adventure',
+        precioDia: 60,
+        kilometraje: 500,
+        proximoMantenimiento: 5000,
+      }));
+    });
   });
 
-  it('loads mock data when localStorage is empty', async () => {
+  it('usa el fallback mock si la api falla', async () => {
+    mockedApi.get.mockRejectedValueOnce(new Error('network'));
+
     const { result } = renderHook(() => useVehiculos());
 
     await waitFor(() => {
-      expect(result.current.vehiculos.length).toBeGreaterThan(0);
+      expect(result.current.loading).toBe(false);
     });
+
+    expect(result.current.vehiculos.length).toBeGreaterThan(0);
+    expect(result.current.error).toBe('network');
   });
 });

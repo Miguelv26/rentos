@@ -1,50 +1,108 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useReservas } from '@/hooks/useReservas';
+import { api } from '@/lib/api';
+import { Reserva } from '@/data/HU3_ReservasData';
+
+jest.mock('@/lib/api', () => ({
+  api: {
+    get: jest.fn(),
+    post: jest.fn(),
+    patch: jest.fn(),
+    delete: jest.fn(),
+  },
+}));
+
+const mockedApi = api as jest.Mocked<typeof api>;
+
+const buildReserva = (overrides: Partial<Reserva> = {}): Reserva => ({
+  id: 'res-1',
+  vehiculoId: 1,
+  clienteId: 'cli-1',
+  cliente: 'Juan Pérez',
+  documento: '123456789',
+  fechaInicio: '2026-03-20',
+  fechaFin: '2026-03-25',
+  desglose: {
+    dias: 5,
+    precioDia: 50000,
+    totalExtras: 0,
+    deposito: 50000,
+  },
+  totalFinal: 250000,
+  estado: 'confirmada',
+  pago: {
+    metodoPago: 'efectivo',
+    estado: 'procesado',
+    fechaOperacion: '2026-03-20',
+    referencia: 'TXN-RES-1',
+  },
+  ...overrides,
+});
+
+const buildReservaInput = (overrides: Partial<Omit<Reserva, 'id'>> = {}) => ({
+  vehiculoId: 1,
+  clienteId: 'cli-1',
+  cliente: 'Juan Pérez',
+  documento: '123456789',
+  fechaInicio: '2026-03-20',
+  fechaFin: '2026-03-25',
+  desglose: {
+    dias: 5,
+    precioDia: 50000,
+    totalExtras: 0,
+    deposito: 50000,
+  },
+  totalFinal: 250000,
+  estado: 'confirmada' as const,
+  ...overrides,
+});
 
 describe('useReservas', () => {
   beforeEach(() => {
-    localStorage.clear();
+    jest.clearAllMocks();
   });
 
-  it('creates a new reservation with payment info', async () => {
-    const { result } = renderHook(() => useReservas());
+  it('crea una reserva con información de pago por defecto', async () => {
+    mockedApi.get.mockResolvedValueOnce([]);
+    mockedApi.post.mockResolvedValueOnce(buildReserva());
 
+    const { result } = renderHook(() => useReservas());
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    let newReserva: any;
-    act(() => {
-      newReserva = result.current.crearReserva({
-        vehiculoId: 1,
-        cliente: 'Juan Pérez',
-        documento: '123456789',
-        fechaInicio: '2026-03-20',
-        fechaFin: '2026-03-25',
-        desglose: {
-          dias: 5,
-          precioDia: 50000,
-          totalExtras: 0
-        },
-        totalFinal: 250000,
-        estado: 'confirmada'
-      });
+    let newReserva: Reserva | undefined;
+    await act(async () => {
+      newReserva = await result.current.crearReserva(buildReservaInput());
     });
 
-    expect(newReserva).toBeDefined();
-    expect(newReserva?.id).toContain('res-');
-    expect(newReserva?.pago).toBeDefined();
+    expect(newReserva?.id).toBe('res-1');
     expect(newReserva?.pago.metodoPago).toBe('efectivo');
     expect(newReserva?.pago.estado).toBe('procesado');
   });
 
-  it('creates reservation with custom payment method', async () => {
-    const { result } = renderHook(() => useReservas());
+  it('crea una reserva con método de pago personalizado', async () => {
+    mockedApi.get.mockResolvedValueOnce([]);
+    mockedApi.post.mockResolvedValueOnce(buildReserva({
+      id: 'res-2',
+      vehiculoId: 2,
+      clienteId: 'cli-2',
+      cliente: 'María García',
+      documento: '987654321',
+      pago: {
+        metodoPago: 'tarjeta_credito',
+        estado: 'procesado',
+        fechaOperacion: '2026-03-22',
+        referencia: 'TXN-CUSTOM-123',
+      },
+    }));
 
+    const { result } = renderHook(() => useReservas());
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    let newReserva: any;
-    act(() => {
-      newReserva = result.current.crearReserva({
+    let newReserva: Reserva | undefined;
+    await act(async () => {
+      newReserva = await result.current.crearReserva(buildReservaInput({
         vehiculoId: 2,
+        clienteId: 'cli-2',
         cliente: 'María García',
         documento: '987654321',
         fechaInicio: '2026-03-22',
@@ -52,211 +110,118 @@ describe('useReservas', () => {
         desglose: {
           dias: 2,
           precioDia: 60000,
-          totalExtras: 10000
+          totalExtras: 10000,
+          deposito: 26000,
         },
         totalFinal: 130000,
-        estado: 'confirmada',
         pago: {
           metodoPago: 'tarjeta_credito',
           estado: 'procesado',
           fechaOperacion: '2026-03-22',
-          referencia: 'TXN-CUSTOM-123'
-        }
-      });
+          referencia: 'TXN-CUSTOM-123',
+        },
+      }));
     });
 
     expect(newReserva?.pago.metodoPago).toBe('tarjeta_credito');
     expect(newReserva?.pago.referencia).toBe('TXN-CUSTOM-123');
   });
 
-  it('updates reservation information', async () => {
-    const { result } = renderHook(() => useReservas());
+  it('actualiza información de una reserva', async () => {
+    mockedApi.get.mockResolvedValueOnce([buildReserva({ id: 'res-3', totalFinal: 90000 })]);
+    mockedApi.patch.mockResolvedValueOnce(buildReserva({ id: 'res-3', totalFinal: 95000 }));
 
+    const { result } = renderHook(() => useReservas());
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    let reservaId: string;
-    act(() => {
-      const reserva = result.current.crearReserva({
-        vehiculoId: 3,
-        cliente: 'Carlos López',
-        documento: '555555555',
-        fechaInicio: '2026-03-25',
-        fechaFin: '2026-03-27',
-        desglose: {
-          dias: 2,
-          precioDia: 45000,
-          totalExtras: 0
-        },
-        totalFinal: 90000,
-        estado: 'confirmada'
-      });
-      reservaId = reserva.id;
+    await act(async () => {
+      await result.current.actualizarReserva('res-3', { totalFinal: 95000 });
     });
 
-    act(() => {
-      result.current.actualizarReserva(reservaId, { totalFinal: 95000 });
-    });
-
-    const updated = result.current.reservas.find(r => r.id === reservaId);
-    expect(updated?.totalFinal).toBe(95000);
+    expect(result.current.reservas.find((reserva) => reserva.id === 'res-3')?.totalFinal).toBe(95000);
   });
 
-  it('cancels a reservation', async () => {
-    const { result } = renderHook(() => useReservas());
+  it('cancela una reserva', async () => {
+    mockedApi.get.mockResolvedValueOnce([buildReserva({ id: 'res-4' })]);
+    mockedApi.patch.mockResolvedValueOnce(buildReserva({ id: 'res-4', estado: 'cancelada' }));
 
+    const { result } = renderHook(() => useReservas());
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    let reservaId: string;
-    act(() => {
-      const reserva = result.current.crearReserva({
-        vehiculoId: 4,
-        cliente: 'Ana Martínez',
-        documento: '777777777',
-        fechaInicio: '2026-03-28',
-        fechaFin: '2026-03-30',
-        desglose: {
-          dias: 2,
-          precioDia: 55000,
-          totalExtras: 5000
-        },
-        totalFinal: 115000,
-        estado: 'confirmada'
-      });
-      reservaId = reserva.id;
+    await act(async () => {
+      await result.current.cancelarReserva('res-4');
     });
 
-    act(() => {
-      result.current.cancelarReserva(reservaId);
-    });
-
-    const cancelled = result.current.reservas.find(r => r.id === reservaId);
-    expect(cancelled?.estado).toBe('cancelada');
+    expect(result.current.reservas.find((reserva) => reserva.id === 'res-4')?.estado).toBe('cancelada');
+    expect(mockedApi.patch).toHaveBeenCalledWith('/reservas/res-4/cancelar');
   });
 
-  it('completes a reservation', async () => {
-    const { result } = renderHook(() => useReservas());
+  it('finaliza una reserva', async () => {
+    mockedApi.get.mockResolvedValueOnce([buildReserva({ id: 'res-5' })]);
+    mockedApi.patch.mockResolvedValueOnce(buildReserva({ id: 'res-5', estado: 'finalizada' }));
 
+    const { result } = renderHook(() => useReservas());
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    let reservaId: string;
-    act(() => {
-      const reserva = result.current.crearReserva({
-        vehiculoId: 5,
-        cliente: 'Pedro Sánchez',
-        documento: '888888888',
-        fechaInicio: '2026-03-15',
-        fechaFin: '2026-03-17',
-        desglose: {
-          dias: 2,
-          precioDia: 50000,
-          totalExtras: 0
-        },
-        totalFinal: 100000,
-        estado: 'confirmada'
-      });
-      reservaId = reserva.id;
+    await act(async () => {
+      await result.current.completarReserva('res-5');
     });
 
-    act(() => {
-      result.current.completarReserva(reservaId);
-    });
-
-    const completed = result.current.reservas.find(r => r.id === reservaId);
-    expect(completed?.estado).toBe('finalizada');
+    expect(result.current.reservas.find((reserva) => reserva.id === 'res-5')?.estado).toBe('finalizada');
+    expect(mockedApi.patch).toHaveBeenCalledWith('/reservas/res-5/finalizar');
   });
 
-  it('verifies vehicle availability correctly', async () => {
-    const { result } = renderHook(() => useReservas());
-
-    await waitFor(() => expect(result.current.loading).toBe(false));
-
-    act(() => {
-      result.current.crearReserva({
+  it('verifica disponibilidad del vehículo con solapamientos reales', async () => {
+    mockedApi.get.mockResolvedValueOnce([
+      buildReserva({
+        id: 'res-6',
         vehiculoId: 10,
-        cliente: 'Cliente Uno',
-        documento: '111111111',
+        clienteId: 'cli-10',
         fechaInicio: '2026-04-01',
         fechaFin: '2026-04-05',
-        desglose: {
-          dias: 4,
-          precioDia: 50000,
-          totalExtras: 0
-        },
-        totalFinal: 200000,
-        estado: 'confirmada'
-      });
-    });
+      }),
+    ]);
 
-    const disponible1 = result.current.verificarDisponibilidad(10, '2026-04-06', '2026-04-10');
-    expect(disponible1).toBe(true);
-
-    const disponible2 = result.current.verificarDisponibilidad(10, '2026-04-03', '2026-04-07');
-    expect(disponible2).toBe(false);
-
-    const disponible3 = result.current.verificarDisponibilidad(10, '2026-03-28', '2026-04-02');
-    expect(disponible3).toBe(false);
-
-    const disponible4 = result.current.verificarDisponibilidad(11, '2026-04-01', '2026-04-05');
-    expect(disponible4).toBe(true);
-  });
-
-  it('ignores cancelled reservations when checking availability', async () => {
     const { result } = renderHook(() => useReservas());
-
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    let reservaId: string;
-    act(() => {
-      const reserva = result.current.crearReserva({
+    expect(result.current.verificarDisponibilidad(10, '2026-04-06', '2026-04-10')).toBe(true);
+    expect(result.current.verificarDisponibilidad(10, '2026-04-03', '2026-04-07')).toBe(false);
+    expect(result.current.verificarDisponibilidad(10, '2026-03-28', '2026-04-02')).toBe(false);
+    expect(result.current.verificarDisponibilidad(11, '2026-04-01', '2026-04-05')).toBe(true);
+  });
+
+  it('ignora reservas canceladas al verificar disponibilidad', async () => {
+    mockedApi.get.mockResolvedValueOnce([
+      buildReserva({
+        id: 'res-7',
         vehiculoId: 20,
-        cliente: 'Cliente Test',
-        documento: '999999999',
+        estado: 'cancelada',
         fechaInicio: '2026-05-01',
         fechaFin: '2026-05-05',
-        desglose: {
-          dias: 4,
-          precioDia: 50000,
-          totalExtras: 0
-        },
-        totalFinal: 200000,
-        estado: 'confirmada'
-      });
-      reservaId = reserva.id;
-    });
+      }),
+    ]);
 
-    act(() => {
-      result.current.cancelarReserva(reservaId);
-    });
-
-    const disponible = result.current.verificarDisponibilidad(20, '2026-05-01', '2026-05-05');
-    expect(disponible).toBe(true);
-  });
-
-  it('excludes specific reservation when checking availability', async () => {
     const { result } = renderHook(() => useReservas());
-
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    let reservaId: string = '';
-    act(() => {
-      const reserva = result.current.crearReserva({
+    expect(result.current.verificarDisponibilidad(20, '2026-05-01', '2026-05-05')).toBe(true);
+  });
+
+  it('excluye una reserva específica al verificar disponibilidad', async () => {
+    mockedApi.get.mockResolvedValueOnce([
+      buildReserva({
+        id: 'res-8',
         vehiculoId: 30,
-        cliente: 'Cliente Exclusión',
-        documento: '333333333',
         fechaInicio: '2026-06-01',
         fechaFin: '2026-06-05',
-        desglose: {
-          dias: 4,
-          precioDia: 50000,
-          totalExtras: 0
-        },
-        totalFinal: 200000,
-        estado: 'confirmada'
-      });
-      reservaId = reserva.id;
-    });
+      }),
+    ]);
 
-    const disponible = result.current.verificarDisponibilidad(30, '2026-06-01', '2026-06-05', reservaId);
-    expect(disponible).toBe(true);
+    const { result } = renderHook(() => useReservas());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.verificarDisponibilidad(30, '2026-06-01', '2026-06-05', 'res-8')).toBe(true);
+    expect(result.current.verificarDisponibilidad(30, '2026-06-01', '2026-06-05')).toBe(false);
   });
 });

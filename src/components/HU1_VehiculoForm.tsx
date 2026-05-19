@@ -12,8 +12,8 @@ interface Props {
 
 export const HU1_VehiculoForm = ({ vehiculo, onSave, onCancel, onDelete }: Props) => {
   const { highContrast } = useConfig();
-  
-  const [formData, setFormData] = useState<Vehiculo>({
+
+  const buildInitialFormData = (): Vehiculo => ({
     id: 0,
     marca: "",
     modelo: "",
@@ -27,17 +27,19 @@ export const HU1_VehiculoForm = ({ vehiculo, onSave, onCancel, onDelete }: Props
     foto: ""
   });
 
+  const [formData, setFormData] = useState<Vehiculo>(buildInitialFormData);
+
   useEffect(() => {
-    if (vehiculo) setFormData(vehiculo);
+    setFormData(vehiculo ? { ...vehiculo } : buildInitialFormData());
   }, [vehiculo]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     const isNumber = ['anio', 'kilometraje', 'proximoMantenimiento', 'precioDia'].includes(name);
-    setFormData({ 
-      ...formData, 
-      [name]: isNumber ? Number(value) : value 
-    });
+    setFormData((current) => ({
+      ...current,
+      [name]: isNumber ? Number(value) : value
+    }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -67,7 +69,7 @@ export const HU1_VehiculoForm = ({ vehiculo, onSave, onCancel, onDelete }: Props
 
           <div>
             <label className={labelClass}>Año</label>
-            <input type="number" name="anio" value={formData.anio} onChange={handleChange} className={inputClass} required />
+            <input type="number" min="1900" name="anio" value={formData.anio} onChange={handleChange} className={inputClass} required />
           </div>
           <div>
             <label className={labelClass}>Placa / Matrícula</label>
@@ -76,11 +78,11 @@ export const HU1_VehiculoForm = ({ vehiculo, onSave, onCancel, onDelete }: Props
 
           <div>
             <label className={labelClass}>Kilometraje Total</label>
-            <input type="number" name="kilometraje" value={formData.kilometraje} onChange={handleChange} className={inputClass} required />
+            <input type="number" min="0" step="1" name="kilometraje" value={formData.kilometraje} onChange={handleChange} className={inputClass} required />
           </div>
           <div>
             <label className={labelClass}>Km para Mantenimiento</label>
-            <input type="number" name="proximoMantenimiento" value={formData.proximoMantenimiento} onChange={handleChange} className={inputClass} required />
+            <input type="number" min="0" step="1" name="proximoMantenimiento" value={formData.proximoMantenimiento} onChange={handleChange} className={inputClass} required />
           </div>
 
           <div>
@@ -103,7 +105,7 @@ export const HU1_VehiculoForm = ({ vehiculo, onSave, onCancel, onDelete }: Props
 
           <div>
             <label className={labelClass}>Precio por Día ($)</label>
-            <input type="number" name="precioDia" value={formData.precioDia} onChange={handleChange} className={inputClass} required />
+            <input type="number" min="0" step="1" name="precioDia" value={formData.precioDia} onChange={handleChange} className={inputClass} required />
           </div>
           <div>
             <label className={labelClass}>URL de la Fotografía</label>
