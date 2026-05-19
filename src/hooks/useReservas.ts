@@ -35,20 +35,30 @@ const normalizeReserva = (reserva: BackendReserva): Reserva => ({
   },
 });
 
-const toBackendPayload = (reserva: Omit<Reserva, 'id' | 'pago'> & { pago?: PagoReserva; clienteId?: string }) => ({
-  vehiculoId: Number(reserva.vehiculoId),
-  clienteId: reserva.clienteId,
-  fechaInicio: reserva.fechaInicio,
-  fechaFin: reserva.fechaFin,
-  desglose: {
-    dias: Number(reserva.desglose.dias),
-    precioDia: Number(reserva.desglose.precioDia),
-    totalExtras: Number(reserva.desglose.totalExtras),
-    deposito: Number(reserva.desglose.deposito ?? 0),
-  },
-  totalFinal: Number(reserva.totalFinal),
-  pago: reserva.pago,
-});
+const toBackendPayload = (
+  reserva: Omit<Reserva, 'id' | 'pago'> & { pago?: PagoReserva; clienteId?: string }
+) => {
+  const clienteId = reserva.clienteId;
+
+  if (!clienteId) {
+    throw new Error('Debes seleccionar un cliente válido para crear la reserva');
+  }
+
+  return {
+    clienteId: String(clienteId),
+    vehiculoId: Number(reserva.vehiculoId),
+    fechaInicio: reserva.fechaInicio,
+    fechaFin: reserva.fechaFin,
+    desglose: {
+      dias: Number(reserva.desglose.dias),
+      precioDia: Number(reserva.desglose.precioDia),
+      totalExtras: Number(reserva.desglose.totalExtras),
+      deposito: Number(reserva.desglose.deposito ?? 0),
+    },
+    totalFinal: Number(reserva.totalFinal),
+    pago: reserva.pago,
+  };
+};
 
 export const useReservas = () => {
   const [reservas, setReservas] = useState<Reserva[]>([]);

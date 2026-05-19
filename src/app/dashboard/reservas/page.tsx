@@ -111,6 +111,7 @@ export default function ReservasPage() {
 
     crearReserva({
       vehiculoId: motoSeleccionada.id,
+      clienteId: String(clienteSeleccionado.id),
       cliente: clienteSeleccionado.nombre,
       documento: clienteSeleccionado.numeroDocumento,
       fechaInicio: fechas.inicio,
